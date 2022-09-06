@@ -8,12 +8,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Cache\CacheWarmer;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeAdminDashboardCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeAdminMigrationCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeCrudControllerCommand;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\DependencyInjection\EasyAdminExtension;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\AdminRouterSubscriber;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\CrudResponseListener;
+use EasyCorp\Bundle\EasyAdminBundle\EventListener\EasyAdminContextVariableListener;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\ExceptionListener;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory;
@@ -81,7 +81,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Router\UrlSigner;
 use EasyCorp\Bundle\EasyAdminBundle\Security\AuthorizationChecker;
 use EasyCorp\Bundle\EasyAdminBundle\Security\SecurityVoter;
-use EasyCorp\Bundle\EasyAdminBundle\Twig\EasyAdminContextVariableFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Twig\EasyAdminTwigExtension;
 use Symfony\Component\DependencyInjection\Compiler\AliasDeprecatedPublicServicesPass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -141,12 +140,6 @@ return static function (ContainerConfigurator $container) {
             ->arg(0, new Reference('service_locator_'.AdminUrlGenerator::class))
             ->tag('twig.extension')
 
-        ->set(EasyAdminContextVariableFactory::class)
-            ->arg(0, service('request_stack'))
-
-        ->set('easyadmin.twig.ea_context_variable', AdminContext::class)
-            ->factory(service(EasyAdminContextVariableFactory::class))
-
         ->set(EaCrudFormTypeExtension::class)
             ->arg(0, new Reference(AdminContextProvider::class))
             ->tag('form.type_extension')
@@ -190,6 +183,11 @@ return static function (ContainerConfigurator $container) {
         ->set(CrudResponseListener::class)
             ->arg(0, new Reference(AdminContextProvider::class))
             ->arg(1, new Reference('twig'))
+            ->tag('kernel.event_listener', ['event' => ViewEvent::class])
+
+        ->set(EasyAdminContextVariableListener::class)
+            ->arg(0, service('request_stack'))
+            ->arg(1, service('twig'))
             ->tag('kernel.event_listener', ['event' => ViewEvent::class])
 
         ->set(AdminContextFactory::class)

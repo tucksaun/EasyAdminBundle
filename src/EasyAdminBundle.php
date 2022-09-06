@@ -3,7 +3,6 @@
 namespace EasyCorp\Bundle\EasyAdminBundle;
 
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
-use EasyCorp\Bundle\EasyAdminBundle\DependencyInjection\AddTwigEasyAdminContextGloabalVariablePass;
 use EasyCorp\Bundle\EasyAdminBundle\DependencyInjection\CreateControllerRegistriesPass;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -21,6 +20,5 @@ class EasyAdminBundle extends Bundle
     public function build(ContainerBuilder $container)
     {
         $container->addCompilerPass(new CreateControllerRegistriesPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION);
-        $container->addCompilerPass(new AddTwigEasyAdminContextGloabalVariablePass());
     }
 }
