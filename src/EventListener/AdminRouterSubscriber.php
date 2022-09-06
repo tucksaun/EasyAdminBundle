@@ -19,7 +19,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Matcher\RequestMatcherInterface;
-use Twig\Environment;
 
 /**
  * This subscriber acts as a "proxy" of all backend requests. First, if the
@@ -43,10 +42,9 @@ class AdminRouterSubscriber implements EventSubscriberInterface
     private $controllerResolver;
     private $urlGenerator;
     private $requestMatcher;
-    private $twig;
     private $urlSigner;
 
-    public function __construct(AdminContextFactory $adminContextFactory, DashboardControllerRegistry $dashboardControllerRegistry, CrudControllerRegistry $crudControllerRegistry, ControllerFactory $controllerFactory, ControllerResolverInterface $controllerResolver, UrlGeneratorInterface $urlGenerator, RequestMatcherInterface $requestMatcher, Environment $twig, UrlSigner $urlSigner)
+    public function __construct(AdminContextFactory $adminContextFactory, DashboardControllerRegistry $dashboardControllerRegistry, CrudControllerRegistry $crudControllerRegistry, ControllerFactory $controllerFactory, ControllerResolverInterface $controllerResolver, UrlGeneratorInterface $urlGenerator, RequestMatcherInterface $requestMatcher, UrlSigner $urlSigner)
     {
         $this->adminContextFactory = $adminContextFactory;
         $this->dashboardControllerRegistry = $dashboardControllerRegistry;
@@ -55,7 +53,6 @@ class AdminRouterSubscriber implements EventSubscriberInterface
         $this->controllerResolver = $controllerResolver;
         $this->urlGenerator = $urlGenerator;
         $this->requestMatcher = $requestMatcher;
-        $this->twig = $twig;
         $this->urlSigner = $urlSigner;
     }
 
@@ -126,9 +123,6 @@ class AdminRouterSubscriber implements EventSubscriberInterface
         }
 
         $request->attributes->set(EA::CONTEXT_REQUEST_ATTRIBUTE, $adminContext);
-
-        // this makes the AdminContext available in all templates as a short named variable
-        $this->twig->addGlobal('ea', $adminContext);
 
         if ($adminContext->getSignedUrls() && false === $this->urlSigner->check($request->getUri())) {
             throw new AccessDeniedHttpException('The signature of the URL is not valid.');

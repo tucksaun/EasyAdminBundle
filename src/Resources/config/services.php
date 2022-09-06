@@ -8,6 +8,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Cache\CacheWarmer;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeAdminDashboardCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeAdminMigrationCommand;
 use EasyCorp\Bundle\EasyAdminBundle\Command\MakeCrudControllerCommand;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterConfiguratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\DependencyInjection\EasyAdminExtension;
@@ -80,6 +81,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Router\UrlSigner;
 use EasyCorp\Bundle\EasyAdminBundle\Security\AuthorizationChecker;
 use EasyCorp\Bundle\EasyAdminBundle\Security\SecurityVoter;
+use EasyCorp\Bundle\EasyAdminBundle\Twig\EasyAdminContextVariableFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Twig\EasyAdminTwigExtension;
 use Symfony\Component\DependencyInjection\Compiler\AliasDeprecatedPublicServicesPass;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -139,6 +141,12 @@ return static function (ContainerConfigurator $container) {
             ->arg(0, new Reference('service_locator_'.AdminUrlGenerator::class))
             ->tag('twig.extension')
 
+        ->set(EasyAdminContextVariableFactory::class)
+            ->arg(0, service('request_stack'))
+
+        ->set('easyadmin.twig.ea_context_variable', AdminContext::class)
+            ->factory(service(EasyAdminContextVariableFactory::class))
+
         ->set(EaCrudFormTypeExtension::class)
             ->arg(0, new Reference(AdminContextProvider::class))
             ->tag('form.type_extension')
@@ -171,8 +179,7 @@ return static function (ContainerConfigurator $container) {
             ->arg(4, new Reference('controller_resolver'))
             ->arg(5, new Reference('router'))
             ->arg(6, new Reference('router'))
-            ->arg(7, new Reference('twig'))
-            ->arg(8, new Reference(UrlSigner::class))
+            ->arg(7, new Reference(UrlSigner::class))
             ->tag('kernel.event_subscriber')
 
         ->set(ControllerFactory::class)
